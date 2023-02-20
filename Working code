@@ -16,7 +16,7 @@ original_subset$Info <- gsub("\\s+", "", original_subset$Info)
 
 # 代书记员
 original_subset$Sub_clerk <- ifelse(grepl("代书记员", original_subset$Info), 
-                                    str_extract(original_subset$Info, "(代书记员[^担任|附|^[[:punct:]]]+)"), 
+                                    str_extract(original_subset$Info, "(代书记员[^担任|适用|申请|判决书|相关法律|附|^[[:punct:]]]+)"), 
                                     "NA")
 
 # 书记员
@@ -26,3 +26,6 @@ original_subset$Clerk <- ifelse(grepl("NA", original_subset$Sub_clerk),
 
 check <- original_subset[!complete.cases(original_subset), ]
 View(check)
+
+non_na <- original_subset[!(original_subset$Sub_clerk == "NA"), ]
+View(non_na)
