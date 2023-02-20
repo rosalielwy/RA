@@ -7,21 +7,22 @@ library(chinese.misc)
 
 # load and subset dataset
 original = read_dta("D:\\NHH\\RA\\CourtVerdicts2015_1pct_translated.dta")
-original_subset <- original %>% select("Summary", "id") %>% head(100)
+original_subset <- original %>% select("Summary", "id") %>% head(10000)
 
 ###########################################################################
 
 original_subset$Info <- original_subset$Summary
-original_subset$Info <- gsub("\\s+","", original_subset$Info)
-text <- original_subset$Info[4] %>% strsplit(split = "")
+original_subset$Info <- gsub("\\s+", "", original_subset$Info)
 
+# 代书记员
 original_subset$Sub_clerk <- ifelse(grepl("代书记员", original_subset$Info), 
-                                    str_extract(original_subset$Info, "(代书记员[^附|^[[:punct:]]]+)"), 
+                                    str_extract(original_subset$Info, "(代书记员[^担任|附|^[[:punct:]]]+)"), 
                                     "NA")
 
+# 书记员
 original_subset$Clerk <- ifelse(grepl("NA", original_subset$Sub_clerk), 
-                                str_extract(original_subset$Info, "(书记员[^附|^[[:punct:]]]+)"), 
+                                str_extract(original_subset$Info, "(书记员[^担任记录|第|速|本|附|^[[:punct:]]]+)"), 
                                 "NA")
 
-original_subset$Documentation_date <- str_extract(original_subset$Info, "二〇一.*|二0一.*|二零一.*")
-original_subset$Documentation_date <- str_match(original_subset$Documentation_date, "二.*?日")
+check <- original_subset[!complete.cases(original_subset), ]
+View(check)
