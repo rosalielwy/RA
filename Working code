@@ -40,34 +40,68 @@ original_subset$Records_clerk <- ifelse(grepl("录入员", original_subset$Info)
 
 # 核对人
 original_subset$Checker <- ifelse(grepl("核对人", original_subset$Info), 
-                                        str_extract(original_subset$Info, "(核对人[^将|附|^[[:punct:]]]+)"), 
+                                        str_extract(original_subset$Info, "(核对人[^将|^附|^[[:punct:]]]+)"), 
                                         "NA")
 # date
 original_subset$Documentation_date <- str_extract(original_subset$Info, "二０.*|二〇.*|二0.*|二零.*") %>% str_match("二.*?日")
 
-###########################################################################
+# ruling
+original_subset$Ruling <- gsub("^.*判决如下|^.*裁定如下", "", original_subset$Info) %>% str_before_last("。|\\.") %>% substring(2)
 
-# rows with missing values in any column of data frame
-check <- original_subset[!complete.cases(original_subset), ]
-View(check)
+# 审判长
+original_subset$Presiding_judge <- ifelse(grepl("审判长", original_subset$Info), 
+                                          str_extract(original_subset$Info, "(审判长[^审判|^人民|^代理|^[[:punct:]]]+)"), 
+                                          "NA")
 
-# check Seb_clerk not NA
-non_na <- original_subset[!(original_subset$Sub_clerk == "NA"), ]
-View(non_na)
+# 审判员
+original_subset$Judge <- ifelse(grepl("审判员", original_subset$Info), 
+                                      str_extract(original_subset$Info, "(审判员[^审判|^代理|^适用|^担任|^独任|^二|^公开|^人民|^[[:punct:]]]+)"), 
+                                      "NA")
 
-# check 执行长 not NA
-chief <- original_subset[!(original_subset$Chief == "NA"), ]
-View(chief)
+# 代理审判员
+original_subset$Sub_judge <- ifelse(grepl("代理审判员", original_subset$Info), 
+                                str_extract(original_subset$Info, "(代理审判员[^适用|^二|^人民|^[[:punct:]]]+)"), 
+                                "NA")
 
-# check 执行员 not NA
-executor <- original_subset[!(original_subset$Executor == "NA"), ]
-View(executor)
+# 人民陪审员
+original_subset$Peoples_assessors <- ifelse(grepl("人民陪审员", original_subset$Info), 
+                                    str_extract(original_subset$Info, "(人民陪审员[^参加|^依法组成|^二|^[[:punct:]]]+)"), 
+                                    "NA")
 
-# check 录入员 not NA
-records_clerk <- original_subset[!(original_subset$Records_clerk == "NA"), ]
-View(records_clerk)
+# 上诉人
+original_subset$Appellant <- ifelse(grepl("上诉人", original_subset$Info), 
+                                            str_extract(original_subset$Info, "(上诉人[^。]+)"), 
+                                            "NA")
 
-# check 核对人 not NA
-checker <- original_subset[!(original_subset$Checker == "NA"), ]
-View(checker)
+# 法定代表人
+original_subset$Legal_representative <- ifelse(grepl("法定代表人", original_subset$Info), 
+                                               str_extract(original_subset$Info, "(法定代表人[^。]+)"), 
+                                               "NA")
+
+# 委托代理人
+original_subset$Authorized_agent <- ifelse(grepl("委托代理人", original_subset$Info), 
+                                               str_extract(original_subset$Info, "(委托代理人[^。]+)"), 
+                                               "NA")
+# 被上诉人
+original_subset$Appellee <- ifelse(grepl("被上诉人", original_subset$Info), 
+                                           str_extract(original_subset$Info, "(被上诉人[^。]+)"), 
+                                           "NA")
+
+# 原告
+original_subset$Plaintiff <- ifelse(grepl("原告", original_subset$Info), 
+                                   str_extract(original_subset$Info, "(原告[^。]+)"), 
+                                   "NA")
+
+# 被告
+original_subset$Defendant <- ifelse(grepl("被告", original_subset$Info), 
+                                    str_extract(original_subset$Info, "(被告[^。]+)"), 
+                                    "NA")
+# 申请执行人
+original_subset$Executor <- ifelse(grepl("申请执行人", original_subset$Info), 
+                                    str_extract(original_subset$Info, "(申请执行人[^。]+)"), 
+                                    "NA")
+# 被执行人
+original_subset$Person_subjected_to_execution <- ifelse(grepl("被执行人", original_subset$Info), 
+                                                        str_extract(original_subset$Info, "(被执行人[^。]+)"), 
+                                                        "NA")
 
