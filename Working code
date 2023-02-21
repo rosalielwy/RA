@@ -16,16 +16,58 @@ original_subset$Info <- gsub("\\s+", "", original_subset$Info)
 
 # 代书记员
 original_subset$Sub_clerk <- ifelse(grepl("代书记员", original_subset$Info), 
-                                    str_extract(original_subset$Info, "(代书记员[^担任|适用|申请|判决书|相关法律|附|^[[:punct:]]]+)"), 
+                                    str_extract(original_subset$Info, "(代书记员[^担任|^适用|^申请|^判决书|^相关法律|^附|^[[:punct:]]]+)"), 
                                     "NA")
 
 # 书记员
 original_subset$Clerk <- ifelse(grepl("NA", original_subset$Sub_clerk), 
-                                str_extract(original_subset$Info, "(书记员[^担任记录|第|速|本|附|^[[:punct:]]]+)"), 
+                                str_extract(original_subset$Info, "(书记员[^打印|^赔偿|^审|^出席|^录入员|^被害|^执行|^援引|^核对人|^合议|^判后|^相关|^注|^主要|^存在|^法律|^提示|^担任|^第|^速|^本|^附|^[0-9]|^[[:punct:]]]+)"), 
                                 "NA")
 
+# 执行长
+original_subset$Chief <- ifelse(grepl("执行长", original_subset$Info), 
+                                    str_extract(original_subset$Info, "(执行长[^执行员|^二]+)"), 
+                                    "NA")
+# 执行员
+original_subset$Executor <- ifelse(grepl("执行员", original_subset$Info), 
+                                    str_extract(original_subset$Info, "(执行员[^二|^[[:punct:]]]+)"), 
+                                    "NA")
+
+# 录入员
+original_subset$Records_clerk <- ifelse(grepl("录入员", original_subset$Info), 
+                                    str_extract(original_subset$Info, "(录入员[^附|^[[:punct:]]]+)"), 
+                                    "NA")
+
+# 核对人
+original_subset$Checker <- ifelse(grepl("核对人", original_subset$Info), 
+                                        str_extract(original_subset$Info, "(核对人[^将|附|^[[:punct:]]]+)"), 
+                                        "NA")
+# date
+original_subset$Documentation_date <- str_extract(original_subset$Info, "二０.*|二〇.*|二0.*|二零.*") %>% str_match("二.*?日")
+
+###########################################################################
+
+# rows with missing values in any column of data frame
 check <- original_subset[!complete.cases(original_subset), ]
 View(check)
 
+# check Seb_clerk not NA
 non_na <- original_subset[!(original_subset$Sub_clerk == "NA"), ]
 View(non_na)
+
+# check 执行长 not NA
+chief <- original_subset[!(original_subset$Chief == "NA"), ]
+View(chief)
+
+# check 执行员 not NA
+executor <- original_subset[!(original_subset$Executor == "NA"), ]
+View(executor)
+
+# check 录入员 not NA
+records_clerk <- original_subset[!(original_subset$Records_clerk == "NA"), ]
+View(records_clerk)
+
+# check 核对人 not NA
+checker <- original_subset[!(original_subset$Checker == "NA"), ]
+View(checker)
+
