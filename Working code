@@ -7,7 +7,7 @@ library(chinese.misc)
 
 # load and subset dataset
 original = read_dta("D:\\NHH\\RA\\CourtVerdicts2015_1pct_translated.dta")
-original_subset <- original %>% select("Summary", "id") %>% head(10000)
+original_subset <- original %>% select("Summary", "id") # %>% head(10000)
 
 ###########################################################################
 
@@ -15,14 +15,51 @@ original_subset$Info <- original_subset$Summary
 original_subset$Info <- gsub("\\s+", "", original_subset$Info)
 
 # 代书记员
-original_subset$Sub_clerk_代书记员 <- ifelse(grepl("代书记员", original_subset$Info), 
-                                         str_extract(original_subset$Info, "(代书记员[^担任|^适用|^申请|^判决书|^相关法律|^附|^[[:punct:]]]+)"), 
-                                         "NA")
-                                         
+original_subset$Sub_clerk <- ifelse(grepl("代书记员", original_subset$Info), 
+                                    str_extract(original_subset$Info, "(代书记员[^截|^上|^赔偿|^第|^抵押|^符|^本案|^无|^原告|^代|^适用|^判决|^申请|^法|^相关|^担|^附|^[[:punct:]]]+)"), 
+                                    "NA")
+
+original_subset$Sub_clerk <- ifelse(grepl("代书记员", original_subset$Sub_clerk), 
+                                    gsub("^.*代书记员", "", original_subset$Sub_clerk), 
+                                    "NA") 
+
+# 代理书记员
+original_subset$Sub_clerk2 <- ifelse(grepl("代理书记员", original_subset$Info), 
+                                     str_extract(original_subset$Info, "(代理书记员[^截|^出|^二|^校对|^上|^赔偿|^第|^抵押|^符|^本案|^无|^原告|^代|^适用|^判决|^申请|^法|^相关|^担|^附|^[[:punct:]]]+)"), 
+                                     "NA")
+
+original_subset$Sub_clerk2 <- ifelse(grepl("代理书记员", original_subset$Sub_clerk2), 
+                                     gsub("^.*代理书记员", "", original_subset$Sub_clerk2), 
+                                     "NA") 
+
+
+
 # 书记员
-original_subset$Clerk <- ifelse(grepl("NA", original_subset$Sub_clerk), 
-                                str_extract(original_subset$Info, "(书记员[^打印|^赔偿|^审|^出席|^录入员|^被害|^执行|^援引|^核对人|^合议|^判后|^相关|^注|^主要|^存在|^法律|^提示|^担任|^第|^速|^本|^附|^[0-9]|^[[:punct:]]]+)"), 
+original_subset$Clerk <- ifelse(grepl("NA", original_subset$Sub_clerk|original_subset$Sub_clerk2), 
+                                str_extract(original_subset$Info, "(书记员[^原告|^依|^于|^下|^二|^高|^出席|^审|^校|^合议|^申请|^援引|^核对|^判后|^相关|^标|^处理|^办|公|^执行|^被|^本案|^注|^主要|^第|^法律|^裁定|^担|^重|^计|^存在|^并|^出|^赔偿|^打|^王|^代|^开|^退|^医疗|^提示|^适|^版|^就|^公|^到|^附|^所|^特|^×|^﹤|^[a-z]|^[A-Z]|^[0-9]|^[[:punct:]]]+)"), 
                                 "NA")
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 # 执行长
 original_subset$Chief <- ifelse(grepl("执行长", original_subset$Info), 
@@ -104,16 +141,46 @@ original_subset$Executor <- ifelse(grepl("申请执行人", original_subset$Info
 original_subset$Person_subjected_to_execution <- ifelse(grepl("被执行人", original_subset$Info), 
                                                         str_extract(original_subset$Info, "(被执行人[^。]+)"), 
                                                         "NA")
-                                                        
+
+
+
+
+
+
 ###########################################################################
+
+# check Sub_clerk not NA (代书记员)
+sub_clerk_non_na <- original_subset[!(original_subset$Sub_clerk == "NA"), ]
+View(sub_clerk_non_na)
+
+sub_clerk_3 <- original_subset[nchar(as.character(original_subset$Sub_clerk)) > 3,]
+View(sub_clerk_3)
+
+# check Sub_clerk2 not NA (代理书记员)
+sub_clerk2_non_na <- original_subset[!(original_subset$Sub_clerk2 == "NA"), ]
+View(sub_clerk2_non_na)
+
+sub_clerk2_3 <- original_subset[nchar(as.character(original_subset$Sub_clerk2)) < 2,]
+View(sub_clerk2_3)
+
+
+
+
+# check Clerk not NA (书记员)
+Clerk_non_na <- original_subset[!(original_subset$Clerk == "NA"), ]
+View(Clerk_non_na)
+
+Clerk_3 <- original_subset[nchar(as.character(original_subset$Clerk)) > 6,]
+View(Clerk_3)
+
+
+
+
+
 
 # rows with missing values in any column of data frame
 check <- original_subset[!complete.cases(original_subset), ]
 View(check)
-
-# check Seb_clerk not NA
-non_na <- original_subset[!(original_subset$Sub_clerk == "NA"), ]
-View(non_na)
 
 # check 执行长 not NA
 chief <- original_subset[!(original_subset$Chief == "NA"), ]
@@ -129,7 +196,6 @@ View(records_clerk)
 
 # check 核对人 not NA
 checker <- original_subset[!(original_subset$Checker == "NA"), ]
-View(checker)
 
 
 
