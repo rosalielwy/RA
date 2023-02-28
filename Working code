@@ -7,7 +7,7 @@ library(chinese.misc)
 
 # load and subset dataset
 original = read_dta("D:\\NHH\\RA\\CourtVerdicts2015_1pct_translated.dta")
-original_subset <- original %>% select("Summary", "id") %>% head(10000)
+original_subset <- original %>% select("Summary", "id") # %>% head(10000)
 
 ###########################################################################
 
@@ -316,6 +316,7 @@ original_subset$Authorized_agent1 <- gsub('(委托代理人)', '', original_subs
 original_subset$Authorized_agent1 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+", "", original_subset$Authorized_agent1)
 
 original_subset$Laywer_authorized_agent1 <- str_extract(original_subset$Authorized_agent1, "[[:punct:]](.+)律师")
+original_subset$Laywer_authorized_agent1 <- str_after_last(original_subset$Laywer_authorized_agent1, "，")
 
 ## 委托代理人2
 original_subset$Authorized_agent2 <- ifelse(grepl("委托代理人", original_subset$Summary), 
@@ -326,6 +327,7 @@ original_subset$Authorized_agent2 <- gsub('(委托代理人)', '', original_subs
 original_subset$Authorized_agent2 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+", "", original_subset$Authorized_agent2)
 
 original_subset$Laywer_authorized_agent2 <- str_extract(original_subset$Authorized_agent2, "[[:punct:]](.+)律师")
+original_subset$Laywer_authorized_agent2 <- str_after_last(original_subset$Laywer_authorized_agent2, "，")
 
 ## 委托代理人3
 original_subset$Authorized_agent3 <- ifelse(grepl("委托代理人", original_subset$Summary), 
@@ -336,6 +338,7 @@ original_subset$Authorized_agent3 <- gsub('(委托代理人)', '', original_subs
 original_subset$Authorized_agent3 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+", "", original_subset$Authorized_agent3)
 
 original_subset$Laywer_authorized_agent3 <- str_extract(original_subset$Authorized_agent3, "[[:punct:]](.+)律师")
+original_subset$Laywer_authorized_agent3 <- str_after_last(original_subset$Laywer_authorized_agent3, "，")
 
 ## 委托代理人4
 original_subset$Authorized_agent4 <- ifelse(grepl("委托代理人", original_subset$Summary), 
@@ -346,6 +349,8 @@ original_subset$Authorized_agent4 <- gsub('(委托代理人)', '', original_subs
 original_subset$Authorized_agent4 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+", "", original_subset$Authorized_agent4)
 
 original_subset$Laywer_authorized_agent4 <- str_extract(original_subset$Authorized_agent4, "[[:punct:]](.+)律师")
+original_subset$Laywer_authorized_agent4 <- str_after_last(original_subset$Laywer_authorized_agent4, "，")
+
 
 
 
