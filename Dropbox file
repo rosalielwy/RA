@@ -1,0 +1,232 @@
+# install package
+library(haven)
+library(strex)
+library(tidyverse)
+library(stringr)
+library(chinese.misc)
+
+# load and subset dataset
+original = read_dta("D:\\NHH\\RA\\CourtVerdicts2015_1pct_translated.dta")
+original_subset <- original %>% select("Summary", "id") # %>% head(10000)
+
+###########################################################################
+
+original_subset$Info <- original_subset$Summary
+original_subset$Info <- gsub("\\s+", "", original_subset$Info)
+original_subset$Info <- gsub("^.*如下", "", original_subset$Info)
+
+## 代书记员
+original_subset$Sub_clerk <- ifelse(grepl("代书记员", original_subset$Info), 
+                                    str_extract(original_subset$Info, "(代书记员[^截|^被|^上|^赔偿|^第|^抵押|^符|^本案|^无|^原告|^代|^适用|^判决|^申请|^法|^相关|^担|^附|^[[:punct:]]]+)"), 
+                                    "NA")
+
+original_subset$Sub_clerk <- ifelse(grepl("代书记员", original_subset$Sub_clerk), 
+                                    gsub("^.*代书记员", "", original_subset$Sub_clerk), 
+                                    "NA") 
+
+## 代理书记员
+original_subset$Sub_clerk2 <- ifelse(grepl("代理书记员", original_subset$Info), 
+                                     str_extract(original_subset$Info, "(代理书记员[^截|^出|^注|^二|^校对|^上|^赔偿|^第|^抵押|^符|^本案|^无|^原告|^代|^适用|^判决|^申请|^法|^相关|^担|^附|^[[:punct:]]]+)"), 
+                                     "NA")
+
+original_subset$Sub_clerk2 <- ifelse(grepl("代理书记员", original_subset$Sub_clerk2), 
+                                     gsub("^.*代理书记员", "", original_subset$Sub_clerk2), 
+                                     "NA") 
+
+## 书记员
+original_subset$Clerk <- ifelse((original_subset$Sub_clerk == "NA") & (original_subset$Sub_clerk2 == "NA"), 
+                                str_extract(original_subset$Info, "(书记员[^让|^诉|^端|^速|^录|^原告|^下|^二|^出席|^审|^校|^合议|^申请|^援引|^核对|^判后|^相关|^标|^处理|^办|公|^执|^被|^本案|^注|^主要|^第|^法|^损|^裁定|^担|^重|^计|^存在|^并|^出|^赔偿|^打|^代|^开|^退|^医疗|^提示|^适|^版|^就|^公|^到|^附|^上|^所|^特|^×|^﹤|^[a-z]|^[A-Z]|^[0-9]|^[[:punct:]]]+)"), 
+                                "NA")
+
+original_subset$Clerk <- gsub('[书记员]', '', original_subset$Clerk)
+
+## 录入员
+original_subset$Records_clerk <- ifelse(grepl("录入员", original_subset$Info), 
+                                        str_extract(original_subset$Info, "(录入员[^附|^[[:punct:]]]+)"), 
+                                        "NA")
+
+original_subset$Records_clerk <- gsub('[录入员]', '', original_subset$Records_clerk)
+
+## 速录员
+original_subset$Court_Reporter <- ifelse(grepl("速录员", original_subset$Info), 
+                                         str_extract(original_subset$Info, "(速录员[^主|^第|^本|^书|^附|^[[:punct:]]]+)"), 
+                                         "NA")
+
+original_subset$Court_Reporter <- gsub('[速录员]', '', original_subset$Court_Reporter)
+
+## 核对人
+original_subset$Checker <- ifelse(grepl("核对人", original_subset$Info), 
+                                  gsub("^.*核对人", "", original_subset$Info), 
+                                  "NA")
+
+original_subset$Checker <- ifelse(original_subset$Checker != "NA", 
+                                  substring(original_subset$Checker, 2), 
+                                  "NA")
+
+## 执行长
+original_subset$Chief <- ifelse(grepl("执行长", original_subset$Info), 
+                                str_extract(original_subset$Info, "(执行长[^执行员|^代|^二|^人民]+)"), 
+                                "NA")
+
+original_subset$Chief <- gsub('[执行长]', '', original_subset$Chief)
+
+original_subset$Chief <- gsub("\uFF1A", "", original_subset$Chief)
+
+## 代理执行员
+original_subset$Sub_executor <- ifelse(grepl("代理执行", original_subset$Info), 
+                                       str_extract(original_subset$Info, "(代理执行[^二]+)"), 
+                                       "NA")
+
+original_subset$Sub_executor <- gsub('[代理执行员]', '', original_subset$Sub_executor)
+
+## 执行员
+original_subset$Executor <- ifelse((original_subset$Sub_executor == "NA"), 
+                                   ifelse(grepl("执行员", original_subset$Info), 
+                                          str_extract(original_subset$Info, "(执行员[^二|^人民|^[[:punct:]]]+)"), 
+                                          "NA"),
+                                   "NA")
+
+original_subset$Executor <- gsub('[执行员]', '', original_subset$Executor)
+
+## 人民陪审员
+original_subset$Peoples_assessors <- ifelse(grepl("人民陪审员", original_subset$Info), 
+                                            str_extract(original_subset$Info, "(人民陪审员[^书|^判|^代|^本|^申请|^参加|^依法组成|^二|^[[:punct:]]]+)"), 
+                                            "NA")
+
+original_subset$Peoples_assessors <- gsub('[人民陪审员]', '', original_subset$Peoples_assessors)
+
+## 审判长
+original_subset$Presiding_judge <- ifelse(grepl("审判长", original_subset$Info), 
+                                          str_extract(original_subset$Info, "(审判长[^二|^执|^陪|^助|^审|^人|^代|^[0-9]|^[[:punct:]]]+)"), 
+                                          "NA")
+
+original_subset$Presiding_judge <- gsub('[审判长]', '', original_subset$Presiding_judge)
+
+## 代理审判员
+original_subset$Sub_judge <- ifelse(grepl("代理审判员", original_subset$Info), 
+                                    str_extract(original_subset$Info, "(代理审判员[^书|^特|^执|^适用|^申请|^组|^二|^审|^人民|^[0-9]|^[[:punct:]]]+)"), 
+                                    "NA")
+
+original_subset$Sub_judge <- gsub('[代理审判员]', '', original_subset$Sub_judge)
+
+## 审判员
+original_subset$Judge <- ifelse((original_subset$Sub_judge == "NA"), 
+                                str_extract(original_subset$Info, "(审判员[^代理|^书|^本|^适用|^申请|^执|^担|^陪|^独|^检|^助|^二|^公开|^人民|^[0-9]|^[a-z]|[[:punct:]]]+)"), 
+                                "NA")
+
+original_subset$Judge <- gsub('[审判员]', '', original_subset$Judge)
+
+# extract date
+original_subset$Documentation_date <- str_extract(original_subset$Info, "二〇一.*|二0一.*|二零一.*")
+original_subset$Documentation_date <- str_before_first(original_subset$Documentation_date, "日")
+
+## ruling
+original_subset$Ruling <- gsub("^.*判决如下|^.*裁定如下", "", original_subset$Info) %>% str_before_last("。|\\.") %>% substring(2)
+
+## 原告
+original_subset$Info2 <- sub("判决如下.*|裁定如下.*", "", original_subset$Summary)
+original_subset$Plaintiff <- ifelse(grepl("原告", original_subset$Info2), 
+                                    str_extract(original_subset$Info2, "(原告[^。]+)"), 
+                                    "NA")
+
+original_subset$Plaintiff <- ifelse(grepl("原告", original_subset$Plaintiff), 
+                                    gsub("^.*原告", "", original_subset$Plaintiff), 
+                                    "NA") 
+
+original_subset$Plaintiff <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+|^\u3001+|^人+", "", original_subset$Plaintiff)
+
+## 被告
+original_subset$Defendant <- ifelse(grepl("被告", original_subset$Info2), 
+                                    str_extract(original_subset$Info2, "(被告[^。]+)"), 
+                                    "NA")
+
+original_subset$Defendant <- ifelse(grepl("被告", original_subset$Defendant), 
+                                    gsub("^.*被告", "", original_subset$Defendant), 
+                                    "NA") 
+
+original_subset$Defendant <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+|^\u3001+|^人+", "", original_subset$Defendant)
+
+## 上诉人
+original_subset$Appellant <- ifelse(grepl("上诉人", original_subset$Info2), 
+                                    str_extract(original_subset$Info, "(上诉人[^。|^承担|^免|^分|^已|^各自|^犯|^在|^的|^死|^撤|^。|^负]+)"), 
+                                    "NA")
+
+original_subset$Appellant <- gsub('[上诉人]', '', original_subset$Appellant)
+
+## 被上诉人
+original_subset$Appellee <- ifelse(grepl("被上诉人", original_subset$Info2), 
+                                   str_extract(original_subset$Info2, "(被上诉人[^。|^承担]+)"), 
+                                   "NA")
+
+original_subset$Appellee <- gsub('[被上诉人]', '', original_subset$Appellee)
+
+## 申请执行人
+original_subset$Applicant_enforcement <- ifelse(grepl("申请执行人", original_subset$Info2), 
+                                                str_extract(original_subset$Info2, "(申请执行人[^。]+)"), 
+                                                "NA")
+
+original_subset$Applicant_enforcement <- gsub('[申请执行人]', '', original_subset$Applicant_enforcement)
+original_subset$Applicant_enforcement <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+|^\u3001+|^人+", "", original_subset$Applicant_enforcement)
+
+## 被执行人
+original_subset$Person_subjected_to_execution <- ifelse(grepl("被执行人", original_subset$Info2), 
+                                                        str_extract(original_subset$Info2, "(被执行人[^。]+)"), 
+                                                        "NA")
+
+original_subset$Person_subjected_to_execution <- gsub('[被执行人]', '', original_subset$Person_subjected_to_execution)
+original_subset$Person_subjected_to_execution <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+|^\u3001+|^人+", "", original_subset$Person_subjected_to_execution)
+
+## 法定代表人1
+original_subset$Legal_representative1 <- ifelse(grepl("法定代表", original_subset$Summary), 
+                                                sapply(str_extract_all(original_subset$Summary, "(法定代表[^。]+)"), `[`, 1), 
+                                                "NA")
+
+original_subset$Legal_representative1 <- gsub('[法定代表人]', '', original_subset$Legal_representative1)
+original_subset$Legal_representative1 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+|^\u3001+", "", original_subset$Legal_representative1)
+
+## 法定代表人2
+original_subset$Legal_representative2 <- ifelse(grepl("法定代表", original_subset$Summary), 
+                                                sapply(str_extract_all(original_subset$Summary, "(法定代表[^。]+)"), `[`, 2), 
+                                                "NA")
+
+original_subset$Legal_representative2 <- gsub('[法定代表人]', '', original_subset$Legal_representative2)
+original_subset$Legal_representative2 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+|^\u3001+", "", original_subset$Legal_representative2)
+
+## 委托代理人1
+original_subset$Authorized_agent1 <- ifelse(grepl("委托代理人", original_subset$Summary), 
+                                            sapply(str_extract_all(original_subset$Summary, "(委托代理人[^。]+)"), `[`, 1), 
+                                            "NA")
+
+original_subset$Authorized_agent1 <- gsub('(委托代理人)', '', original_subset$Authorized_agent1)
+original_subset$Authorized_agent1 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+", "", original_subset$Authorized_agent1)
+
+## 委托代理人2
+original_subset$Authorized_agent2 <- ifelse(grepl("委托代理人", original_subset$Summary), 
+                                            sapply(str_extract_all(original_subset$Summary, "(委托代理人[^。]+)"), `[`, 2), 
+                                            "NA")
+
+original_subset$Authorized_agent2 <- gsub('(委托代理人)', '', original_subset$Authorized_agent2)
+original_subset$Authorized_agent2 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+", "", original_subset$Authorized_agent2)
+
+## 委托代理人3
+original_subset$Authorized_agent3 <- ifelse(grepl("委托代理人", original_subset$Summary), 
+                                            sapply(str_extract_all(original_subset$Summary, "(委托代理人[^。]+)"), `[`, 3), 
+                                            "NA")
+
+original_subset$Authorized_agent3 <- gsub('(委托代理人)', '', original_subset$Authorized_agent3)
+original_subset$Authorized_agent3 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+", "", original_subset$Authorized_agent3)
+
+## 委托代理人4
+original_subset$Authorized_agent4 <- ifelse(grepl("委托代理人", original_subset$Summary), 
+                                            sapply(str_extract_all(original_subset$Summary, "(委托代理人[^。]+)"), `[`, 4), 
+                                            "NA")
+
+original_subset$Authorized_agent4 <- gsub('(委托代理人)', '', original_subset$Authorized_agent4)
+original_subset$Authorized_agent4 <- gsub("^[[:punct:]]+|^\uFF1A+|^\uFF09+", "", original_subset$Authorized_agent4)
+
+# delete columns
+original_subset <- subset(original_subset, select = -c(Info, Info2))
+
+# write as csv
+write_excel_csv(original_subset, "D:\\NHH\\RA\\Clean_data.csv")
+class(original_subset$Documentation_date)
