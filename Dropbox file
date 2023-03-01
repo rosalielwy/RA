@@ -229,4 +229,3 @@ original_subset <- subset(original_subset, select = -c(Info, Info2))
 
 # write as csv
 write_excel_csv(original_subset, "D:\\NHH\\RA\\Clean_data.csv")
-class(original_subset$Documentation_date)
